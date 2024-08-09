@@ -19,11 +19,11 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class CsvQuestionDao implements QuestionDao {
-    private final TestFileNameProvider fileNameProvider;
-
     private static final int AMOUNT_OF_LINES_TO_SKIP = 1;
 
     private static final char COLUMN_SEPARATOR = ';';
+
+    private final TestFileNameProvider fileNameProvider;
 
     @Override
     public List<Question> findAll() {
@@ -42,9 +42,9 @@ public class CsvQuestionDao implements QuestionDao {
     }
 
     private CSVReader initializeCSVReader() {
-        InputStream in = getClass().getClassLoader().getResourceAsStream(fileNameProvider.getTestFileName());
-        assert in != null;
-        InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileNameProvider.getTestFileName());
+        assert inputStream != null;
+        InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
         return new CSVReaderBuilder(reader)
                 .withSkipLines(AMOUNT_OF_LINES_TO_SKIP)
                 .withCSVParser(new CSVParserBuilder()
