@@ -16,7 +16,10 @@ public class TestServiceImpl implements TestService {
     public void executeTest() {
         ioService.printLine("");
         ioService.printFormattedLine("Please answer the questions below%n");
+        printQuestions();
+    }
 
+    private void printQuestions() {
         for (Question question: questionDao.findAll()) {
             ioService.printLine(question.text());
             ioService.printLine("");

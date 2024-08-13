@@ -14,7 +14,6 @@ import ru.otus.hw.exceptions.QuestionReadException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -27,39 +26,33 @@ public class CsvQuestionDao implements QuestionDao {
 
     @Override
     public List<Question> findAll() {
-        List<QuestionDto> questionsDtos;
-        List<Question> questions;
         try (CSVReader csvReader = initializeCSVReader()) {
             CsvToBean<QuestionDto> csv = new CsvToBeanBuilder<QuestionDto>(csvReader)
                     .withType(QuestionDto.class)
                     .build();
-            questionsDtos = csv.parse();
-            questions = getQuestinsList(questionsDtos);
+            List<QuestionDto> questionsDtos = csv.parse();
+            return questionsDtos
+                    .stream()
+                    .map(QuestionDto::toDomainObject)
+                    .toList();
         } catch (Exception e) {
-            throw new QuestionReadException(String.format("Could,t parse csv file. Error: %s", e.getMessage()));
+            throw new QuestionReadException(String.format("Could,t parse csv file. Error: %s", e.getMessage()), e);
         }
-        return questions;
     }
 
     private CSVReader initializeCSVReader() {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileNameProvider.getTestFileName());
-        assert inputStream != null;
-        InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        return new CSVReaderBuilder(reader)
-                .withSkipLines(AMOUNT_OF_LINES_TO_SKIP)
-                .withCSVParser(new CSVParserBuilder()
-                        .withSeparator(COLUMN_SEPARATOR)
-                        .build())
-                .build();
-    }
-
-    private List<Question> getQuestinsList(List<QuestionDto> questionsDtos) {
-        List<Question> questions = new ArrayList<>();
-
-        for (QuestionDto question: questionsDtos) {
-            questions.add(question.toDomainObject());
+        if (inputStream != null) {
+            InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+            return new CSVReaderBuilder(reader)
+                    .withSkipLines(AMOUNT_OF_LINES_TO_SKIP)
+                    .withCSVParser(new CSVParserBuilder()
+                            .withSeparator(COLUMN_SEPARATOR)
+                            .build())
+                    .build();
+        } else {
+            throw new QuestionReadException("Couldn't load test csv file as inputStream");
         }
-        return questions;
     }
 
 }
