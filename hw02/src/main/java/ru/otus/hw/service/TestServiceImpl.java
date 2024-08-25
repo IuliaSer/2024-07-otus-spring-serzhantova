@@ -7,9 +7,6 @@ import ru.otus.hw.domain.Answer;
 import ru.otus.hw.domain.Question;
 import ru.otus.hw.domain.Student;
 import ru.otus.hw.domain.TestResult;
-import ru.otus.hw.exceptions.WrongInputException;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,14 +22,15 @@ public class TestServiceImpl implements TestService {
         ioService.printFormattedLine("Please answer the questions below%n");
         var questions = questionDao.findAll();
         var testResult = new TestResult(student);
+        String prompt = "Choose the number of the answer";
+        String errorMessage = "You enter wrong number. Try again";
 
         for (var question: questions) {
-            var isAnswerValid = false;
-
             askQuestion(question);
-            String answerFromStudent = ioService.readString();
-            isAnswerValid = isAnswerCorrect(question, answerFromStudent);
-            testResult.applyAnswer(question, isAnswerValid);
+            int amountOfAnswers = question.answers().size();
+            int studentAnswer = ioService.readIntForRangeWithPrompt(1, amountOfAnswers, prompt, errorMessage);
+            Answer answer = getCorrespondingAnswer(question, studentAnswer);
+            testResult.applyAnswer(question, answer.isCorrect());
         }
         return testResult;
     }
@@ -40,19 +38,15 @@ public class TestServiceImpl implements TestService {
     private void askQuestion(Question question) {
         ioService.printFormattedLine("%s%n", question.text());
 
+        int i = 1;
         for (Answer answer: question.answers()) {
-            ioService.printLine(answer.text());
+            ioService.printFormattedLine("%d. %s", i++, answer.text());
         }
     }
 
-    private boolean isAnswerCorrect(Question question, String answerFromStudent) {
-        List<Answer> answers = question.answers();
-        if (answers.contains(new Answer(answerFromStudent, true))) {
-            return true;
-        } else if (answers.contains(new Answer(answerFromStudent, false))) {
-            return false;
-        } else {
-            throw new WrongInputException("Your answer is not among the following");
-        }
+    private Answer getCorrespondingAnswer(Question question, int studentAnswer) {
+        return question.answers().get(studentAnswer - 1);
     }
+
 }
+

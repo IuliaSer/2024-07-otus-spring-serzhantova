@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
@@ -44,7 +45,7 @@ public class CsvQuestionDao implements QuestionDao {
 
     private CSVReader initializeCSVReader() {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileNameProvider.getTestFileName());
-        if (inputStream != null) {
+        if (Objects.nonNull(inputStream)) {
             InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
             return new CSVReaderBuilder(reader)
                     .withSkipLines(AMOUNT_OF_LINES_TO_SKIP)

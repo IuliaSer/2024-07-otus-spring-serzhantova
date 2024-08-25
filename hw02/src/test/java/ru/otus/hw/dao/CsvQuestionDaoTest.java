@@ -1,5 +1,6 @@
 package ru.otus.hw.dao;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.otus.hw.config.TestFileNameProvider;
 import ru.otus.hw.domain.Answer;
@@ -18,9 +19,15 @@ import static ru.otus.hw.Constants.TEST_QUESTION;
 
 public class CsvQuestionDaoTest {
 
-    private TestFileNameProvider testFileNameProvider = mock(TestFileNameProvider.class);
+    private TestFileNameProvider testFileNameProvider;
 
-    private QuestionDao questionDao = new CsvQuestionDao(testFileNameProvider);
+    private QuestionDao questionDao;
+
+    @BeforeEach
+    public void setUp() {
+        testFileNameProvider = mock(TestFileNameProvider.class);
+        questionDao = new CsvQuestionDao(testFileNameProvider);
+    }
 
     @Test
     public void findAllTest_Valid() {
