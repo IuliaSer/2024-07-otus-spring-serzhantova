@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import ru.otus.hw.config.TestFileNameProvider;
 import ru.otus.hw.domain.Answer;
 import ru.otus.hw.domain.Question;
@@ -16,12 +14,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
-import static ru.otus.hw.Constants.*;
+import static ru.otus.hw.Constants.TEST_ANSWER_1;
+import static ru.otus.hw.Constants.TEST_ANSWER_2;
+import static ru.otus.hw.Constants.TEST_QUESTION;
 
-@SpringBootTest(properties = "spring.shell.interactive.enabled=false")
+@SpringBootTest(classes = CsvQuestionDao.class)
 public class CsvQuestionDaoTest {
 
-    @Autowired
+    @MockBean
     private TestFileNameProvider testFileNameProvider;
 
     @Autowired
@@ -43,17 +43,5 @@ public class CsvQuestionDaoTest {
         when(testFileNameProvider.getTestFileName()).thenReturn("wrongPath.csv");
 
         assertThrows(QuestionReadException.class, () -> questionDao.findAll());
-    }
-
-    @Configuration
-    static class CsvQuestionDaoConfig {
-
-        @MockBean
-        private TestFileNameProvider fileNameProvider;
-
-        @Bean
-        QuestionDao csvQuestionDao() {
-            return new CsvQuestionDao(fileNameProvider);
-        }
     }
 }
