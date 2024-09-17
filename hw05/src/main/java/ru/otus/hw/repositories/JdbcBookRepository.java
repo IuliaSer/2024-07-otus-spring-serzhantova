@@ -38,7 +38,7 @@ public class JdbcBookRepository implements BookRepository {
                 "join authors a on b.author_id = a.id " +
                 "join genres g on b.genre_id = g.id " +
                 "where b.id = :id";
-        return namedParameterJdbc.query(sqlQuery, Map.of("id", id), new BookRowMapper()).stream().findFirst();
+        return Optional.ofNullable(namedParameterJdbc.queryForObject(sqlQuery, Map.of("id", id), new BookRowMapper()));
     }
 
     @Override
