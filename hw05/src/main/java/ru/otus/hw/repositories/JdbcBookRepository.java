@@ -20,6 +20,15 @@ import java.util.Optional;
 @Repository
 public class JdbcBookRepository implements BookRepository {
 
+    private static final String FIND_QUERY = """
+                select  b.id as book_id, b.title as book_title, 
+                        a.id as author_id, a.full_name as author_full_name, 
+                        g.id as genre_id, g.name as genre_name
+                        from books b
+                        join authors a on b.author_id = a.id
+                        join genres g on b.genre_id = g.id
+            """;
+
     private final JdbcOperations jdbcOperations;
 
     private final NamedParameterJdbcOperations namedParameterJdbc;
@@ -31,25 +40,13 @@ public class JdbcBookRepository implements BookRepository {
 
     @Override
     public Optional<Book> findById(long id) {
-        String sqlQuery = "select b.id as book_id, b.title as book_title, " +
-                "a.id as author_id, a.full_name as author_full_name, " +
-                "g.id as genre_id, g.name as genre_name " +
-                "from books b " +
-                "join authors a on b.author_id = a.id " +
-                "join genres g on b.genre_id = g.id " +
-                "where b.id = :id";
+        String sqlQuery = FIND_QUERY + " where b.id = :id";
         return Optional.ofNullable(namedParameterJdbc.queryForObject(sqlQuery, Map.of("id", id), new BookRowMapper()));
     }
 
     @Override
     public List<Book> findAll() {
-        String sqlQuery = "select b.id as book_id, b.title as book_title, " +
-                "a.id as author_id, a.full_name as author_full_name, " +
-                "g.id as genre_id, g.name as genre_name " +
-                "from books b " +
-                "join authors a on b.author_id = a.id " +
-                "join genres g on b.genre_id = g.id ";
-        return jdbcOperations.query(sqlQuery, new BookRowMapper());
+        return jdbcOperations.query(FIND_QUERY, new BookRowMapper());
     }
 
     @Override
@@ -62,15 +59,16 @@ public class JdbcBookRepository implements BookRepository {
 
     @Override
     public void deleteById(long id) {
-        namedParameterJdbc.update("delete from books where id = :id", Map.of("id", id));
+        int numberOfRowsDeleted = namedParameterJdbc.update("delete from books where id = :id", Map.of("id", id));
+
+        if (numberOfRowsDeleted == 0) {
+            throw new EntityNotFoundException(String.format("Не получилось удалить книгу с id: %s", id));
+        }
     }
 
     private Book insert(Book book) {
         var keyHolder = new GeneratedKeyHolder();
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("title", book.getTitle());
-        params.addValue("author_id", book.getAuthor().getId());
-        params.addValue("genre_id", book.getGenre().getId());
+        MapSqlParameterSource params = createSqlParams(book);
 
         namedParameterJdbc.update("insert into books (id, title, author_id, genre_id) " +
                         "values (default, :title, :author_id, :genre_id)", params, keyHolder, new String[]{"id"});
@@ -80,15 +78,13 @@ public class JdbcBookRepository implements BookRepository {
     }
 
     private Book update(Book book) {
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("title", book.getTitle());
-        params.addValue("author_id", book.getAuthor().getId());
-        params.addValue("genre_id", book.getGenre().getId());
+        MapSqlParameterSource params = createSqlParams(book);
 
         int numberOfRowsUpdated = namedParameterJdbc.update(
-                "update books set title = :title, " +
-                        "author_id = :author_id, " +
-                        "genre_id = :genre_id",
+                """
+                        update books set title = :title, 
+                        author_id = :author_id, 
+                        genre_id = :genre_id""",
                 params);
 
         if (numberOfRowsUpdated == 0) {
@@ -110,5 +106,13 @@ public class JdbcBookRepository implements BookRepository {
             String genreName = rs.getString("genre_name");
             return new Book(bookId, bookTitle, new Author(authorId, authorFullName), new Genre(genreId, genreName));
         }
+    }
+
+    private MapSqlParameterSource createSqlParams(Book book) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("title", book.getTitle());
+        params.addValue("author_id", book.getAuthor().getId());
+        params.addValue("genre_id", book.getGenre().getId());
+        return params;
     }
 }
