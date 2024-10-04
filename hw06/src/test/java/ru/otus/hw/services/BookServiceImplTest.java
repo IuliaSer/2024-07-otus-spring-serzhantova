@@ -11,10 +11,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.otus.hw.entity.Author;
-import ru.otus.hw.entity.Book;
-import ru.otus.hw.entity.Genre;
+import ru.otus.hw.dto.AuthorDto;
+import ru.otus.hw.dto.BookDto;
+import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
+import ru.otus.hw.mappers.AuthorMapper;
+import ru.otus.hw.mappers.BookMapper;
+import ru.otus.hw.mappers.GenreMapper;
 import ru.otus.hw.repositories.JpaAuthorRepository;
 import ru.otus.hw.repositories.JpaBookRepository;
 import ru.otus.hw.repositories.JpaGenreRepository;
@@ -24,13 +27,14 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static ru.otus.hw.utils.Constants.TEST_DATA_UTILS_PATH;
-import static ru.otus.hw.utils.TestDataUtils.getDbAuthors;
-import static ru.otus.hw.utils.TestDataUtils.getDbBooks;
-import static ru.otus.hw.utils.TestDataUtils.getDbGenres;
+import static ru.otus.hw.utils.TestDataUtils.getAuthorDtos;
+import static ru.otus.hw.utils.TestDataUtils.getGenreDtos;
+import static ru.otus.hw.utils.TestDataUtils.getBookDtos;
 
 @DataJpaTest
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-@Import({JpaBookRepository.class, BookServiceImpl.class, JpaAuthorRepository.class, JpaGenreRepository.class  })
+@Import({JpaBookRepository.class, BookServiceImpl.class, JpaAuthorRepository.class, JpaGenreRepository.class,
+        BookMapper.class, AuthorMapper.class, GenreMapper.class})
 public class BookServiceImplTest {
 
     @Autowired
@@ -39,23 +43,23 @@ public class BookServiceImplTest {
     @Autowired
     private BookServiceImpl service;
 
-    private List<Author> dbAuthors;
+    private List<AuthorDto> authorDtos;
 
-    private List<Genre> dbGenres;
+    private List<GenreDto> genreDtos;
 
-    private List<Book> dbBooks;
+    private List<BookDto> bookDtos;
 
     @BeforeEach
     void setUp() {
-        dbAuthors = getDbAuthors();
-        dbGenres = getDbGenres();
-        dbBooks = getDbBooks(dbAuthors, dbGenres);
+        authorDtos = getAuthorDtos();
+        genreDtos = getGenreDtos();
+        bookDtos = getBookDtos(authorDtos, genreDtos);
     }
 
     @DisplayName("должен загружать книгу по id")
     @ParameterizedTest
-    @MethodSource(TEST_DATA_UTILS_PATH + "#getDbBooks")
-    public void findByIdTest(Book expectedBook) {
+    @MethodSource(TEST_DATA_UTILS_PATH + "#getBookDtos")
+    public void findByIdTest(BookDto expectedBook) {
         var actualBook = service.findById(expectedBook.getId());
 
         assertThat(actualBook).isPresent()
@@ -67,7 +71,7 @@ public class BookServiceImplTest {
     @Test
     void findAllTest() {
         var actualBooks = service.findAll();
-        var expectedBooks = dbBooks;
+        var expectedBooks = bookDtos;
 
         assertThat(actualBooks).containsExactlyElementsOf(expectedBooks);
         actualBooks.forEach(System.out::println);
@@ -77,8 +81,8 @@ public class BookServiceImplTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void insertTest() {
-        var expectedBook = new Book(4, "BookTitle_10500", dbAuthors.get(0), dbGenres.get(0));
-        var returnedBook = service.insert("BookTitle_10500", dbAuthors.get(0).getId(), dbGenres.get(0).getId());
+        var expectedBook = new BookDto(4, "BookTitle_10500", authorDtos.get(0), genreDtos.get(0));
+        var returnedBook = service.insert("BookTitle_10500", authorDtos.get(0).getId(), genreDtos.get(0).getId());
 
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() > 0)
@@ -94,7 +98,7 @@ public class BookServiceImplTest {
     @Test
     void insertTest_EntityNotFoundException() {
         assertThatThrownBy( () ->
-        {service.insert("BookTitle_10500", 5, dbGenres.get(0).getId());})
+        {service.insert("BookTitle_10500", 5, genreDtos.get(0).getId());})
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -102,14 +106,14 @@ public class BookServiceImplTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void updateTest() {
-        var expectedBook = new Book(1L, "BookTitle_10500", dbAuthors.get(2), dbGenres.get(2));
+        var expectedBook = new BookDto(1L, "BookTitle_10500", authorDtos.get(2), genreDtos.get(2));
 
         assertThat(service.findById(expectedBook.getId()))
                 .isPresent()
                 .get()
                 .isNotEqualTo(expectedBook);
 
-        var returnedBook = service.update(1, "BookTitle_10500", dbAuthors.get(2).getId(), dbGenres.get(2).getId());
+        var returnedBook = service.update(1, "BookTitle_10500", authorDtos.get(2).getId(), genreDtos.get(2).getId());
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);

@@ -11,9 +11,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.otus.hw.entity.Book;
-import ru.otus.hw.entity.Comment;
+import ru.otus.hw.dto.BookDto;
+import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
+import ru.otus.hw.mappers.AuthorMapper;
+import ru.otus.hw.mappers.BookMapper;
+import ru.otus.hw.mappers.CommentMapper;
+import ru.otus.hw.mappers.GenreMapper;
 import ru.otus.hw.repositories.JpaBookRepository;
 import ru.otus.hw.repositories.JpaCommentRepository;
 
@@ -22,12 +26,13 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static ru.otus.hw.utils.Constants.TEST_DATA_UTILS_PATH;
-import static ru.otus.hw.utils.TestDataUtils.getDbBooks;
-import static ru.otus.hw.utils.TestDataUtils.getDbComments;
+import static ru.otus.hw.utils.TestDataUtils.getBookDtos;
+import static ru.otus.hw.utils.TestDataUtils.getCommentDtos;
 
 @DataJpaTest
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-@Import({JpaCommentRepository.class, CommentServiceImpl.class, JpaBookRepository.class})
+@Import({JpaCommentRepository.class, CommentServiceImpl.class, JpaBookRepository.class, CommentMapper.class,
+        BookMapper.class, AuthorMapper.class, GenreMapper.class})
 public class CommentServiceImplTest {
 
     @Autowired
@@ -36,20 +41,20 @@ public class CommentServiceImplTest {
     @Autowired
     private CommentServiceImpl service;
 
-    private List<Book> dbBooks;
+    private List<BookDto> bookDtos;
 
-    private List<Comment> dbComments;
+    private List<CommentDto> commentDtos;
 
     @BeforeEach
     void setUp() {
-        dbBooks = getDbBooks();
-        dbComments = getDbComments();
+        bookDtos = getBookDtos();
+        commentDtos = getCommentDtos();
     }
 
     @DisplayName("должен загружать комментарий по id")
     @ParameterizedTest
-    @MethodSource(TEST_DATA_UTILS_PATH + "#getDbComments")
-    public void findByIdTest(Comment expectedComment) {
+    @MethodSource(TEST_DATA_UTILS_PATH + "#getCommentDtos")
+    public void findByIdTest(CommentDto expectedComment) {
         var actualComment = service.findById(expectedComment.getId());
 
         assertThat(actualComment).isPresent()
@@ -60,7 +65,7 @@ public class CommentServiceImplTest {
     @DisplayName("должен загружать список всех комментариев")
     @Test
     void findAllByBookIdTest() {
-        var expectedComments = List.of(dbComments.get(0));
+        var expectedComments = List.of(commentDtos.get(0));
 
         var actualComments = service.findAllByBookId(1);
 
@@ -71,7 +76,7 @@ public class CommentServiceImplTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void insertTest() {
-        var expectedComment = new Comment(4, "Message_4", dbBooks.get(0));
+        var expectedComment = new CommentDto(4, "Message_4", bookDtos.get(0));
 
         var returnedComment = service.insert("Message_4", 1);
 
@@ -97,14 +102,14 @@ public class CommentServiceImplTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void updateTest() {
-        var expectedComment = new Comment(1L, "Message_4", dbBooks.get(2));
+        var expectedComment = new CommentDto(1L, "Message_4", bookDtos.get(2));
 
         assertThat(service.findById(expectedComment.getId()))
                 .isPresent()
                 .get()
                 .isNotEqualTo(expectedComment);
 
-        var returnedComment = service.update(1, "Message_4", dbBooks.get(2).getId());
+        var returnedComment = service.update(1, "Message_4", bookDtos.get(2).getId());
 
         assertThat(returnedComment).isNotNull()
                 .matches(comment -> comment.getId() > 0)

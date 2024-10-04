@@ -2,7 +2,7 @@ package ru.otus.hw.converters;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.otus.hw.entity.Book;
+import ru.otus.hw.dto.BookDto;
 
 @RequiredArgsConstructor
 @Component
@@ -11,11 +11,11 @@ public class BookConverter {
 
     private final GenreConverter genreConverter;
 
-    public String bookToString(Book book) {
+    public String bookDtoToString(BookDto bookDto) {
         return "Id: %d, title: %s, author: {%s}, genres: [%s]".formatted(
-                book.getId(),
-                book.getTitle(),
-                authorConverter.authorToString(book.getAuthor()),
-                genreConverter.genreToString(book.getGenre()));
+                bookDto.getId(),
+                bookDto.getTitle(),
+                authorConverter.authorDtoToString(bookDto.getAuthorDto()),
+                genreConverter.genreToString(bookDto.getGenreDto()));
     }
 }
