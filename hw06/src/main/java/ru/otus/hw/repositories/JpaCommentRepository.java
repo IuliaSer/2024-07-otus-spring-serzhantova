@@ -1,6 +1,5 @@
 package ru.otus.hw.repositories;
 
-import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -8,14 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.entity.Comment;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Objects.nonNull;
-import static org.hibernate.jpa.QueryHints.JAKARTA_HINT_FETCH_GRAPH;
-import static ru.otus.hw.utils.Constants.COMMENTS_ENTITY_GRAPH;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,10 +21,7 @@ public class JpaCommentRepository implements CommentRepository {
 
     @Override
     public Optional<Comment> findById(long id) {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(JAKARTA_HINT_FETCH_GRAPH, getEntityGraph());
-
-        return Optional.ofNullable(em.find(Comment.class, id, properties));
+        return Optional.ofNullable(em.find(Comment.class, id));
     }
 
     @Override
@@ -38,7 +30,6 @@ public class JpaCommentRepository implements CommentRepository {
                 Comment.class);
         return query
                 .setParameter("bookId", bookId)
-                .setHint(JAKARTA_HINT_FETCH_GRAPH, getEntityGraph())
                 .getResultList();
     }
 
@@ -58,9 +49,4 @@ public class JpaCommentRepository implements CommentRepository {
             em.remove(comment);
         }
     }
-
-    private EntityGraph<?> getEntityGraph() {
-        return em.getEntityGraph(COMMENTS_ENTITY_GRAPH);
-    }
-
 }
