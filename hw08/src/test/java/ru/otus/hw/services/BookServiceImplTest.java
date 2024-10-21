@@ -13,10 +13,12 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
+import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.mappers.AuthorMapper;
 import ru.otus.hw.mappers.BookMapper;
+import ru.otus.hw.mappers.CommentMapper;
 import ru.otus.hw.mappers.GenreMapper;
 import ru.otus.hw.repositories.BookRepository;
 
@@ -29,14 +31,17 @@ import static ru.otus.hw.utils.TestDataUtils.*;
 
 @DataMongoTest
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-@Import({BookServiceImpl.class, BookMapper.class, AuthorMapper.class, GenreMapper.class})
+@Import({BookServiceImpl.class, BookMapper.class, AuthorMapper.class, GenreMapper.class, CommentServiceImpl.class, CommentMapper.class})
 public class BookServiceImplTest {
 
     @Autowired
     private BookRepository repository;
 
     @Autowired
-    private BookServiceImpl service;
+    private BookServiceImpl bookService;
+
+    @Autowired
+    private CommentServiceImpl commentService;
 
     private List<AuthorDto> authorDtos;
 
@@ -55,7 +60,7 @@ public class BookServiceImplTest {
     @ParameterizedTest
     @MethodSource(TEST_DATA_UTILS_PATH + "#getBookDtos")
     public void findByIdTest(BookDto expectedBook) {
-        var actualBook = service.findById(expectedBook.getId());
+        var actualBook = bookService.findById(expectedBook.getId());
 
         assertThat(actualBook).isPresent()
                 .get()
@@ -65,7 +70,7 @@ public class BookServiceImplTest {
     @DisplayName("должен загружать список всех книг")
     @Test
     void findAllTest() {
-        var actualBooks = service.findAll();
+        var actualBooks = bookService.findAll();
         var expectedBooks = bookDtos;
 
         assertThat(actualBooks).containsExactlyElementsOf(expectedBooks);
@@ -77,12 +82,12 @@ public class BookServiceImplTest {
     @Test
     void insertTest() {
         var expectedBook = new BookDto(null, "BookTitle_10500", authorDtos.get(0), genreDtos.get(0));
-        var returnedBook = service.insert("BookTitle_10500", authorDtos.get(0).getId(), genreDtos.get(0).getId());
+        var returnedBook = bookService.insert("BookTitle_10500", authorDtos.get(0).getId(), genreDtos.get(0).getId());
 
         assertThat(returnedBook).isNotNull()
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-        assertThat(service.findById(returnedBook.getId()))
+        assertThat(bookService.findById(returnedBook.getId()))
                 .isPresent()
                 .get()
                 .isEqualTo(returnedBook);
@@ -92,7 +97,7 @@ public class BookServiceImplTest {
     @Test
     void insertTest_EntityNotFoundException() {
         assertThatThrownBy( () ->
-        {service.insert("BookTitle_10500", "5", genreDtos.get(0).getId());})
+        {bookService.insert("BookTitle_10500", "5", genreDtos.get(0).getId());})
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -102,26 +107,30 @@ public class BookServiceImplTest {
     void updateTest() {
         var expectedBook = new BookDto("1", "BookTitle_10500", authorDtos.get(2), genreDtos.get(2));
 
-        assertThat(service.findById(expectedBook.getId()))
+        assertThat(bookService.findById(expectedBook.getId()))
                 .isPresent()
                 .get()
                 .isNotEqualTo(expectedBook);
 
-        var returnedBook = service.update("1", "BookTitle_10500", authorDtos.get(2).getId(), genreDtos.get(2).getId());
+        var returnedBook = bookService.update("1", "BookTitle_10500", authorDtos.get(2).getId(), genreDtos.get(2).getId());
         assertThat(returnedBook).isNotNull()
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-        assertThat(service.findById(returnedBook.getId()))
+        assertThat(bookService.findById(returnedBook.getId()))
                 .isPresent()
                 .get()
                 .isEqualTo(returnedBook);
+
+        for (CommentDto commentDto : commentService.findAllByBookId("1")) {
+            assertThat(commentDto.getBookDto()).isEqualTo(returnedBook);
+        }
     }
 
     @DisplayName("должен сохранять измененную книгу")
     @Test
     void updateTest_NoAuthorFound_EntityNotFoundException() {
         assertThatThrownBy( () ->
-        {service.update("1","BookTitle_10500", "4", "1");})
+        {bookService.update("1","BookTitle_10500", "4", "1");})
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -129,7 +138,7 @@ public class BookServiceImplTest {
     @Test
     void updateTest_NoGenreFound_EntityNotFoundException() {
         assertThatThrownBy( () ->
-        {service.update("1","BookTitle_10500", "1", "4");})
+        {bookService.update("1","BookTitle_10500", "1", "4");})
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -137,8 +146,21 @@ public class BookServiceImplTest {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
     void shouldDeleteBook() {
-        assertThat(service.findById("1")).isPresent();
-        service.deleteById("1");
-        assertThat(service.findById("1")).isEmpty();
+        assertThat(bookService.findById("1")).isPresent();
+
+        bookService.deleteById("1");
+
+        assertThat(bookService.findById("1")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("должен удалять комментарии, содержащий удаленную книгу")
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+    void shouldDeleteCommentsAfterDeleteBook() {
+        assertThat(!commentService.findAllByBookId("1").isEmpty());
+
+        bookService.deleteById("1");
+
+        assertThat(commentService.findAllByBookId("1").isEmpty());
     }
 }

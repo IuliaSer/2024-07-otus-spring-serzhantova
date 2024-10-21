@@ -23,14 +23,12 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentMapper commentMapper;
 
-    @Transactional(readOnly = true)
     @Override
     public Optional<CommentDto> findById(String id) {
         return commentRepository.findById(id).map(commentMapper::convertToCommentDto);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<CommentDto> findAllByBookId(String bookId) {
         return commentRepository
                 .findAllByBookId(bookId)

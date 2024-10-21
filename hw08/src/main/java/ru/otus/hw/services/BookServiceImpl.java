@@ -9,6 +9,7 @@ import ru.otus.hw.entity.Book;
 import ru.otus.hw.mappers.BookMapper;
 import ru.otus.hw.repositories.AuthorRepository;
 import ru.otus.hw.repositories.BookRepository;
+import ru.otus.hw.repositories.CommentRepository;
 import ru.otus.hw.repositories.GenreRepository;
 
 import java.util.List;
@@ -23,16 +24,16 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
 
+    private final CommentRepository commentRepository;
+
     private final BookMapper bookMapper;
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<BookDto> findById(String id) {
         return bookRepository.findById(id).map(bookMapper::convertToBookDto);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<BookDto> findAll() {
         return bookRepository
                 .findAll()
@@ -57,6 +58,7 @@ public class BookServiceImpl implements BookService {
     @Transactional
     public void deleteById(String id) {
         bookRepository.deleteById(id);
+        commentRepository.deleteAllByBookId(id);
     }
 
     private BookDto save(String id, String title, String authorId, String genreId) {
