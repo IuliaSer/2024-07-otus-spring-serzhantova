@@ -87,7 +87,7 @@ public class CommentServiceImplTest {
                 .isEqualTo(returnedComment);
     }
 
-    @DisplayName("должен сохранять новый комментарий")
+    @DisplayName("должен выкидывать EntityNotFoundException при не найденной книге")
     @Test
     void insertTest_EntityNotFoundException() {
         assertThatThrownBy( () ->

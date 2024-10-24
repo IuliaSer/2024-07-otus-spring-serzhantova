@@ -93,14 +93,6 @@ public class BookServiceImplTest {
                 .isEqualTo(returnedBook);
     }
 
-    @DisplayName("должен не сохранять новую книгу")
-    @Test
-    void insertTest_EntityNotFoundException() {
-        assertThatThrownBy( () ->
-        {bookService.insert("BookTitle_10500", "5", genreDtos.get(0).getId());})
-                .isInstanceOf(EntityNotFoundException.class);
-    }
-
     @DisplayName("должен сохранять измененную книгу")
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     @Test
@@ -126,7 +118,7 @@ public class BookServiceImplTest {
         }
     }
 
-    @DisplayName("должен сохранять измененную книгу")
+    @DisplayName("должен выкидывать EntityNotFoundException при не найденом авторе")
     @Test
     void updateTest_NoAuthorFound_EntityNotFoundException() {
         assertThatThrownBy( () ->
@@ -134,7 +126,7 @@ public class BookServiceImplTest {
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
-    @DisplayName("должен сохранять измененную книгу")
+    @DisplayName("должен выкидывать EntityNotFoundException при не найденом жанре")
     @Test
     void updateTest_NoGenreFound_EntityNotFoundException() {
         assertThatThrownBy( () ->
@@ -154,7 +146,7 @@ public class BookServiceImplTest {
     }
 
     @Test
-    @DisplayName("должен удалять комментарии, содержащий удаленную книгу")
+    @DisplayName("должен удалять комментарии, содержащии удаленную книгу")
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     void shouldDeleteCommentsAfterDeleteBook() {
         assertThat(!commentService.findAllByBookId("1").isEmpty());

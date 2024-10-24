@@ -45,7 +45,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public BookDto insert(String title, String authorId, String genreId) {
-        return save("0", title, authorId, genreId);
+        return save(null, title, authorId, genreId);
     }
 
     @Override
