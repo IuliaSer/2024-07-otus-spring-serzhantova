@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BookDtoIds {
+public class ShortBookDto {
     private long id;
 
     @NotBlank(message = "Title should not be empty")
