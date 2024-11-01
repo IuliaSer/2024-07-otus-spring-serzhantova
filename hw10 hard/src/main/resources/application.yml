@@ -1,0 +1,13 @@
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  datasource:
+    show_sql: true
+    url: jdbc:h2:mem:maindb
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+      schema-locations: classpath:schema.sql
