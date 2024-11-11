@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.otus.hw.dto.ShortBookDto;
+import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.services.BookService;
 
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -55,6 +56,15 @@ public class BookControllerTest {
 
     @Test
     @SneakyThrows
+    public void getByIdTest_EntityNotFound() {
+        when(bookService.findById(10)).thenThrow(EntityNotFoundException.class);
+
+        mvc.perform(get("/books/10"))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    @SneakyThrows
     public void updateTest() {
         ShortBookDto shortBookDto = new ShortBookDto(1, "BookTitle_1", 1L, 1L);
         when(bookService.update(anyLong(), anyString(), anyLong(), anyLong())).thenReturn(getBookDtos().get(0));
@@ -64,6 +74,18 @@ public class BookControllerTest {
                     .content(mapper.writeValueAsString((shortBookDto))))
                 .andExpect(status().isOk())
                 .andExpect(content().json(mapper.writeValueAsString(getBookDtos().get(0))));
+    }
+
+    @Test
+    @SneakyThrows
+    public void updateTest_InvalidBook_TitleIsEmpty() {
+        ShortBookDto shortBookDto = new ShortBookDto(1, "", 1L, 1L);
+        when(bookService.update(anyLong(), anyString(), anyLong(), anyLong())).thenReturn(getBookDtos().get(0));
+
+        mvc.perform(put("/books")
+                        .contentType("application/json")
+                        .content(mapper.writeValueAsString((shortBookDto))))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -81,8 +103,21 @@ public class BookControllerTest {
 
     @Test
     @SneakyThrows
+    public void createTest_InvalidBook_NoAuthor() {
+        ShortBookDto shortBookDto = new ShortBookDto(1, "BookTitle_1", null, 1L);
+        when(bookService.insert(anyString(), anyLong(), anyLong())).thenReturn(getBookDtos().get(0));
+
+        mvc.perform(post("/books")
+                        .contentType("application/json")
+                        .content(mapper.writeValueAsString((shortBookDto))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
     public void deleteTest() {
         mvc.perform(delete("/books/1"))
                 .andExpect(status().isNoContent());
     }
+
 }

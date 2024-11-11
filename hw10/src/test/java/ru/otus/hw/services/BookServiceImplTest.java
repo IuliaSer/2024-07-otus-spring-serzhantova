@@ -1,24 +1,34 @@
 package ru.otus.hw.services;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.transaction.annotation.*;
-import ru.otus.hw.dto.*;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import ru.otus.hw.dto.AuthorDto;
+import ru.otus.hw.dto.BookDto;
+import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
-import ru.otus.hw.mappers.*;
+import ru.otus.hw.mappers.AuthorMapper;
+import ru.otus.hw.mappers.BookMapper;
+import ru.otus.hw.mappers.GenreMapper;
 import ru.otus.hw.repositories.BookRepository;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static ru.otus.hw.utils.Constants.TEST_DATA_UTILS_PATH;
-import static ru.otus.hw.utils.TestDataUtils.*;
+import static ru.otus.hw.utils.TestDataUtils.getAuthorDtos;
+import static ru.otus.hw.utils.TestDataUtils.getBookDtos;
+import static ru.otus.hw.utils.TestDataUtils.getGenreDtos;
 
 @DataJpaTest
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
