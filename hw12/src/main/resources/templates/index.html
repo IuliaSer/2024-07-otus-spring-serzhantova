@@ -43,7 +43,7 @@
     </tbody>
 </table>
 
-
+<div id="response"></div>
 <script>
     async function fetchAndDisplayBooks() {
         try {
@@ -94,6 +94,9 @@
     }
 
     async function deleteBook(id) {
+        const responseContainer = document.getElementById('response');
+        responseContainer.innerHTML = '';
+
         try {
             const response = await fetch(`/books/${id}`, {
                 method: 'DELETE'
@@ -102,9 +105,11 @@
                 await fetchAndDisplayBooks();
             } else {
                 console.error('Error deleting book:', response.status);
+                throw new Error(`Error: ${response.status} ${response.statusText}`);
             }
         } catch (error) {
             console.error('Error deleting book:', error);
+            responseContainer.innerHTML = `<p class="error-message">${error.message}</p>`;
         }
     }
 

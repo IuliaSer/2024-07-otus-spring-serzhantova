@@ -38,7 +38,7 @@ public class BookControllerTest {
     @Autowired
     private ObjectMapper mapper;
 
-    @WithMockUser(username = "User_1", password = "pass")
+    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
     @Test
     @SneakyThrows
     public void getAllTest() {
@@ -58,7 +58,7 @@ public class BookControllerTest {
                 .andExpect(status().is3xxRedirection());
     }
 
-    @WithMockUser(username = "User_1", password = "pass")
+    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
     @Test
     @SneakyThrows
     public void getByIdTest() {
@@ -78,7 +78,7 @@ public class BookControllerTest {
                 .andExpect(status().is3xxRedirection());
     }
 
-    @WithMockUser(username = "User_1", password = "pass")
+    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
     @Test
     @SneakyThrows
     public void getByIdTest_EntityNotFound() {
@@ -88,7 +88,7 @@ public class BookControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-    @WithMockUser(username = "User_1", password = "pass")
+    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
     @Test
     @SneakyThrows
     public void updateTest() {
@@ -102,7 +102,7 @@ public class BookControllerTest {
                 .andExpect(content().json(mapper.writeValueAsString(getBookDtos().get(0))));
     }
 
-    @WithMockUser(username = "User_1", password = "pass")
+    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
     @Test
     @SneakyThrows
     public void updateTest_InvalidBook_TitleIsEmpty() {
@@ -115,7 +115,7 @@ public class BookControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @WithMockUser(username = "User_1", password = "pass")
+    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
     @Test
     @SneakyThrows
     public void createTest() {
@@ -129,7 +129,7 @@ public class BookControllerTest {
                 .andExpect(content().json(mapper.writeValueAsString(getBookDtos().get(0))));
     }
 
-    @WithMockUser(username = "User_1", password = "pass")
+    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
     @Test
     @SneakyThrows
     public void createTest_InvalidBook_NoAuthor() {
@@ -142,11 +142,19 @@ public class BookControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @WithMockUser(username = "User_1", password = "pass")
+    @WithMockUser(username = "User_1", authorities = {"ROLE_ADMIN"})
     @Test
     @SneakyThrows
     public void deleteTest() {
         mvc.perform(delete("/books/1"))
                 .andExpect(status().isNoContent());
+    }
+
+    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
+    @Test
+    @SneakyThrows
+    public void deleteTest_NotAuthorized() {
+        mvc.perform(delete("/books/1"))
+                .andExpect(status().isForbidden());
     }
 }
