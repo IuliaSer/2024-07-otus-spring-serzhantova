@@ -88,7 +88,7 @@ public class BookControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
+    @WithMockUser(username = "User_1", authorities = {"ROLE_ADMIN"})
     @Test
     @SneakyThrows
     public void updateTest() {
@@ -96,13 +96,26 @@ public class BookControllerTest {
         when(bookService.update(anyLong(), anyString(), anyLong(), anyLong())).thenReturn(getBookDtos().get(0));
 
         mvc.perform(put("/books")
-                    .contentType("application/json")
-                    .content(mapper.writeValueAsString((shortBookDto))))
+                        .contentType("application/json")
+                        .content(mapper.writeValueAsString((shortBookDto))))
                 .andExpect(status().isOk())
                 .andExpect(content().json(mapper.writeValueAsString(getBookDtos().get(0))));
     }
 
     @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
+    @Test
+    @SneakyThrows
+    public void updateTest_NotAuthorized() {
+        ShortBookDto shortBookDto = new ShortBookDto(1, "BookTitle_1", 1L, 1L);
+        when(bookService.update(anyLong(), anyString(), anyLong(), anyLong())).thenReturn(getBookDtos().get(0));
+
+        mvc.perform(put("/books")
+                    .contentType("application/json")
+                    .content(mapper.writeValueAsString((shortBookDto))))
+                .andExpect(status().isForbidden());
+    }
+
+    @WithMockUser(username = "User_1", authorities = {"ROLE_ADMIN"})
     @Test
     @SneakyThrows
     public void updateTest_InvalidBook_TitleIsEmpty() {
@@ -115,7 +128,7 @@ public class BookControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
+    @WithMockUser(username = "User_1", authorities = {"ROLE_ADMIN"})
     @Test
     @SneakyThrows
     public void createTest() {
@@ -130,6 +143,19 @@ public class BookControllerTest {
     }
 
     @WithMockUser(username = "User_1", authorities = {"ROLE_USER"})
+    @Test
+    @SneakyThrows
+    public void createTest_NotAuthorized() {
+        ShortBookDto shortBookDto = new ShortBookDto(1, "BookTitle_1", 1L, 1L);
+        when(bookService.insert(anyString(), anyLong(), anyLong())).thenReturn(getBookDtos().get(0));
+
+        mvc.perform(post("/books")
+                        .contentType("application/json")
+                        .content(mapper.writeValueAsString((shortBookDto))))
+                .andExpect(status().isForbidden());
+    }
+
+    @WithMockUser(username = "User_1", authorities = {"ROLE_ADMIN"})
     @Test
     @SneakyThrows
     public void createTest_InvalidBook_NoAuthor() {
