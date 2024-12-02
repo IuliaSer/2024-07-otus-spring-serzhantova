@@ -1,10 +1,10 @@
-package ru.otus.hw;
+package ru.otus.hw.enums;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 
 @Getter
-public enum Role implements GrantedAuthority {
+public enum Authority implements GrantedAuthority {
     ROLE_USER,
     ROLE_ADMIN;
 
