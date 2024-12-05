@@ -2,7 +2,6 @@ package ru.otus.hw.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,15 +24,9 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/login").permitAll()
-                        .requestMatchers(HttpMethod.DELETE).hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST).hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT).hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.GET).hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                        .anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults())
-                .exceptionHandling(handling -> handling.accessDeniedHandler(new CustomAccessDeniedHandler()));
-
+                                .requestMatchers("/**").permitAll())
+                .exceptionHandling(handling -> handling.accessDeniedHandler(new CustomAccessDeniedHandler()))
+                .httpBasic(Customizer.withDefaults());
         return http.build();
     }
 }

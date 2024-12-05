@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.otus.hw.Role;
+import ru.otus.hw.enums.Authority;
 
 @Data
 @Builder
@@ -29,5 +29,5 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Authority authority;
 }

@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Propagation;
@@ -32,7 +33,8 @@ import static ru.otus.hw.utils.TestDataUtils.getGenreDtos;
 
 @DataJpaTest
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-@Import({BookServiceImpl.class, BookMapper.class, AuthorMapper.class, GenreMapper.class})
+@Import({BookServiceImpl.class, BookMapper.class, AuthorMapper.class, GenreMapper.class
+        })
 public class BookServiceImplTest {
 
     @Autowired
@@ -40,6 +42,9 @@ public class BookServiceImplTest {
 
     @Autowired
     private BookServiceImpl service;
+
+    @MockBean
+    private AclServiceWrapperService aclServiceWrapperService;
 
     private List<AuthorDto> authorDtos;
 
