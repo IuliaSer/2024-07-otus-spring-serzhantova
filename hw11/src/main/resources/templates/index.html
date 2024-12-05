@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>List of all books</title>
+    <style type="text/css">
+        body {
+            padding: 50px;
+        }
+
+        .books {
+            border: 1px solid steelblue;
+            width: 300px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .books tr td, th {
+            padding: 5px;
+            border: 1px solid steelblue;
+        }
+
+        .books td:last-child, td:first-child {
+            width: 50px;
+        }
+    </style>
+</head>
+
+<body>
+<h1>books:</h1>
+
+<table class="books" id="books">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Genre</th>
+        <th>Author</th>
+        <th>Delete</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+
+<script>
+    async function fetchAndDisplayBooks() {
+        try {
+            const response = await fetch("http://localhost:8080/books")
+            const books = await response.json()
+            console.log('books:', books)
+
+            fillTable(books)
+        } catch (error) {
+            console.log('Error fetching books:', error);
+        }
+    };
+
+    const fillTable = (books) => {
+        const tbody = document.querySelector('#books tbody');
+        tbody.innerHTML = '';
+        books.forEach(book => {
+            const rowElement = document.createElement('tr');
+            tbody.appendChild(rowElement);
+
+            const cellElementId = document.createElement('td');
+            cellElementId.textContent = book.id;
+            rowElement.append(cellElementId);
+
+            const cellElementTitle = document.createElement('td');
+            cellElementTitle.textContent = book.title;
+            rowElement.append(cellElementTitle);
+
+            const cellElementGenre = document.createElement('td');
+            cellElementGenre.textContent = book.genreDto.name;
+            rowElement.append(cellElementGenre);
+
+            const cellElementAuthor = document.createElement('td');
+            cellElementAuthor.textContent = book.authorDto.fullName;
+            rowElement.append(cellElementAuthor);
+
+            const deleteCell = document.createElement('td');
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => {
+                if (confirm(`Please confirm deleting the book with title ${book.title}`)) {
+                    deleteBook(book.id);
+                }
+            });
+            deleteCell.appendChild(deleteButton);
+            rowElement.append(deleteCell);
+        })
+    }
+
+    async function deleteBook(id) {
+        try {
+            const response = await fetch(`/books/${id}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                await fetchAndDisplayBooks();
+            } else {
+                console.error('Error deleting book:', response.status);
+            }
+        } catch (error) {
+            console.error('Error deleting book:', error);
+        }
+    }
+
+    fetchAndDisplayBooks();
+</script>
+
+</body>
+</html>
