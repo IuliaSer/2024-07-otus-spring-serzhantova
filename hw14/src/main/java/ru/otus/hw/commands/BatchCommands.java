@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 
@@ -17,10 +15,6 @@ public class BatchCommands {
     private final Job migrateJob;
 
     private final JobLauncher jobLauncher;
-
-    private final JobOperator jobOperator;
-
-    private final JobExplorer jobExplorer;
 
     @ShellMethod(value = "startMigrationJobWithJobLauncher", key = "sm")
     public void startMigrationJobWithJobLauncher() throws Exception {

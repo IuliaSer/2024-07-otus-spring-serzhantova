@@ -1,6 +1,5 @@
 package ru.otus.hw.migration.processors;
 
-
 import org.springframework.batch.item.ItemProcessor;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.entity.Author;

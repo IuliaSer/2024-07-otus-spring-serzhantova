@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
@@ -30,25 +31,37 @@ public class JobConfig {
     @Bean
     public Job migrateDbJob(Step migrateAuthorStep, Step migrateGenreStep, Step migrateBookStep,
                             Step migrateCommentStep) {
-        return new JobBuilder("migrateDbJob", jobRepository)
+        SimpleJobBuilder jobBuilder = new JobBuilder("migrateDbJob", jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .start(authorMigration.createTableAuthors())
                 .next(authorMigration.createSequenceForAuthorIds())
+                .next(authorMigration.createTemporaryTableAuthorIds())
                 .next(migrateAuthorStep)
-                .next(authorMigration.dropSequenceAuthorIds())
                 .next(genreMigration.createTableGenres())
+                .next(genreMigration.createTemporaryTableGenreIds())
                 .next(genreMigration.createSequenceForGenreIds())
                 .next(migrateGenreStep)
-                .next(genreMigration.dropSequenceGenreIds())
                 .next(bookMigration.createTableBooks())
+                .next(bookMigration.createTemporaryTableBookIds())
                 .next(bookMigration.createSequenceForBookIds())
                 .next(migrateBookStep)
-                .next(bookMigration.dropSequenceBookIds())
                 .next(commentMigration.createTableComments())
+                .next(commentMigration.createTemporaryTableCommentIds())
                 .next(commentMigration.createSequenceForCommentIds())
-                .next(migrateCommentStep)
-                .next(commentMigration.dropSequenceCommentIds())
-                .build();
+                .next(migrateCommentStep);
+        return cleanDb(jobBuilder);
     }
 
+    public Job cleanDb(SimpleJobBuilder jobBuilder) {
+        return jobBuilder
+                .next(authorMigration.dropSequenceAuthorIds())
+                .next(authorMigration.dropTemporaryAuthor())
+                .next(genreMigration.dropSequenceGenreIds())
+                .next(genreMigration.dropTemporaryGenre())
+                .next(bookMigration.dropSequenceBookIds())
+                .next(bookMigration.dropTemporaryBook())
+                .next(commentMigration.dropSequenceCommentIds())
+                .next(commentMigration.dropTemporaryComment())
+                .build();
+    }
 }

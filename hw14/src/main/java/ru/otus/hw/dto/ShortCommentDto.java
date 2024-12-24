@@ -1,4 +1,4 @@
-package ru.otus.hw.dto.postgres;
+package ru.otus.hw.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,10 +7,10 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Builder
-public class CommentDto {
-    private Long id;
+public class ShortCommentDto {
+    private String id;
 
     private String message;
 
-    private Long bookId;
+    private String bookId;
 }

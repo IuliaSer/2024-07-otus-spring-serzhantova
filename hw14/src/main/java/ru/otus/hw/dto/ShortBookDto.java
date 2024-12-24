@@ -1,4 +1,4 @@
-package ru.otus.hw.dto.postgres;
+package ru.otus.hw.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,11 +8,11 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class ShortBookDto {
-    private Long id;
+    private String id;
 
     private String title;
 
-    private Long authorId;
+    private String authorId;
 
-    private Long genreId;
+    private String genreId;
 }
