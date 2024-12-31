@@ -1,0 +1,30 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  datasource:
+    show_sql: true
+    url: jdbc:h2:mem:maindb
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+      schema-locations: classpath:schema.sql
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      defaults:
+        enabled: true
+      show-details: always
+logging:
+  file:
+    name: info.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    level:
+      root: info
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
