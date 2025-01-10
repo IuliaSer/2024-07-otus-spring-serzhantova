@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>List of all books</title>
+    <style type="text/css">
+        body {
+            padding: 50px;
+        }
+
+        .books {
+            border: 1px solid steelblue;
+            width: 300px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .books tr td, th {
+            padding: 5px;
+            border: 1px solid steelblue;
+        }
+
+        .books td:last-child, td:first-child {
+            width: 50px;
+        }
+    </style>
+</head>
+
+<body>
+<h1>books:</h1>
+
+<table class="books" id="books">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Genre</th>
+        <th>Author</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+
+<script>
+    async function fetchAndDisplayBooks() {
+        try {
+            const books = await fetch("http://localhost:8080/books")
+            const [id, title] = await books.json()
+            fillTable([id, title])
+        } catch (error) {
+            error.response.data
+            console.log('Error fetching books:', error);
+        }
+    };
+
+    const fillTable = (books) => {
+        const tbody = document.querySelector('#books tbody');
+        tbody.innerHTML = '';
+
+        books.forEach(book => {
+            const rowElement = document.createElement('tr');
+            tbody.appendChild(rowElement);
+
+            const cellElementId = document.createElement('td');
+            cellElementId.textContent = book.id;
+            rowElement.append(cellElementId);
+
+            const cellElementTitle = document.createElement('td');
+            cellElementTitle.textContent = book.title;
+            rowElement.append(cellElementTitle);
+
+            const cellElementGenre = document.createElement('td');
+            cellElementGenre.textContent = book.genreDto.name;
+            rowElement.append(cellElementGenre);
+
+            const cellElementAuthor = document.createElement('td');
+            cellElementAuthor.textContent = book.authorDto.fullName;
+            rowElement.append(cellElementAuthor);
+        })
+    }
+
+    fetchAndDisplayBooks();
+</script>
+
+</body>
+</html>
