@@ -1,0 +1,33 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  datasource:
+    show_sql: true
+    url: jdbc:postgresql://localhost:5431/postgres
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:db/data.sql
+      schema-locations: classpath:db/schema.sql
+resilience4j:
+  ratelimiter:
+    instances:
+      rateLimiter:
+        limit-for-period: 1
+        limit-refresh-period: 5s
+        timeout-duration: 0
+  circuitbreaker:
+    instances:
+      circuitBreaker:
+        slidingWindowSize: 3
+        minimumNumberOfCalls: 2
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        failureRateThreshold: 50
+        slowCallDurationThreshold: 1s
+        slowCallRateThreshold: 30
