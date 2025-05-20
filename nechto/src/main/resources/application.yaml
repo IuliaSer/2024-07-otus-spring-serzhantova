@@ -1,0 +1,22 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+  datasource:
+    show_sql: true
+    url: jdbc:postgresql://localhost:5430/postgres?currentSchema=nechto
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:db/data.sql
+      schema-locations: classpath:db/schema.sql
+
+logging:
+  level:
+    org:
+      springframework:
+        security: debug
