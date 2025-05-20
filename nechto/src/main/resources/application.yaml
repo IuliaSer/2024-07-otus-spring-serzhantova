@@ -5,7 +5,7 @@ spring:
       ddl-auto: none
   datasource:
     show_sql: true
-    url: jdbc:postgresql://localhost:5431/postgres
+    url: jdbc:postgresql://localhost:5430/postgres?currentSchema=nechto
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
@@ -14,6 +14,7 @@ spring:
       mode: always
       data-locations: classpath:db/data.sql
       schema-locations: classpath:db/schema.sql
+
 logging:
   level:
     org:
